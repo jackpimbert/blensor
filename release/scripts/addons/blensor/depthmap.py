@@ -9,6 +9,7 @@ import time
 import random
 import bpy
 import blensor.globals
+from blensor import evd
 from blensor import mesh_utils
 from blensor.not_implemented_handler import NotImplemented
 
@@ -78,6 +79,8 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
 
     verts = []
 
+    evd_storage = evd.evd_file(filename, width, height, max_distance)
+
     reusable_vector = Vector([0.0,0.0,0.0,0.0])
     for idx in range( len(zbuffer) ):
             x = float(idx % width)
@@ -94,6 +97,10 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
             object_distance =  math.sqrt(world_ddist ** 2 + zbuffer[idx] ** 2)
             
             depthmap[idx] = object_distance
+
+            # Update evd storage for just the depth data
+            evd_storage.addEntry(distance=object_distance, distance_noise=object_distance, idx=idx)
+
             if add_blender_mesh or add_noisy_blender_mesh:
                 if object_distance < max_distance:
                     Z = -zbuffer[idx] 
@@ -101,11 +108,15 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
                     Y = -( Z * dy ) / focal_length
                     reusable_vector.xyzw = [X,Y,Z,1.0]
                     vt = (world_transformation * reusable_vector).xyz
+                    verts.append((x_multiplier * vt[0], y_multiplier*vt[1], z_multiplier*vt[2]))
 
-                    verts.append((x_multiplier * vt[0], y_multiplier*vt[1], z_multiplier*vt[2]))                
 
     if filename:
-        fh = open(filename, "w")
+        # save using evd file pipeline
+        evd_storage.appendEvdFile()
+
+        # save an additional copy using origin method
+        fh = open(filename+".backup", "w")
         fh.buffer.write(struct.pack("ii",width,height))
         for idx in range( width*height ):
             fh.buffer.write(struct.pack("d", depthmap[idx]))
