@@ -68,17 +68,14 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
         print ("Lens unit has to be millimeters")
         return False, 0.0,0.0
 
-    # This uses the default sensor size of 32mm!
-    # TODO: Update to use actual pixel_per_mm
-    pixel_per_mm = blensor.globals.getPixelPerMillimeter(width,height)
-
-    # FIXME: Hardcoded Kinect --> We need sensor size to be correct.
-    pixel_size = 0.0078
-    pixel_per_mm = 1/pixel_size
-    print(f"pixel_per_mm: {pixel_per_mm}")
-
+    cam_name = bpy.context.scene.camera.name
+    cam = bpy.data.cameras[cam_name]
+    # TODO
+    # - This assumes camera sensor is wider than it is taller.
+    # - Use the sensor mode to figure out which dimensions to use.
+    sensor_size = cam.sensor_width
+    pixel_per_mm = blensor.globals.getPixelPerMillimeter(width,height,sensor_size)
     focal_length = flength * pixel_per_mm
-    print(f"focal_length (flength*pixel_per_mm): {focal_length}")
 
     bpy.ops.render.render()
 
@@ -98,10 +95,10 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
 
             ddist = math.sqrt(dx**2 + dy**2)
             
-
             world_ddist = ( ddist * zbuffer[idx] ) / focal_length
 
-
+            # TODO:
+            # - Max distance is not checked in depth map!
             object_distance =  math.sqrt(world_ddist ** 2 + zbuffer[idx] ** 2)
 
             depthmap[idx] = object_distance
