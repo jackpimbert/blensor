@@ -121,11 +121,11 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
         evd_storage.appendEvdFile()
 
         # save an additional copy using origin method
-        fh = open(filename+".backup", "w")
-        fh.buffer.write(struct.pack("ii",width,height))
-        for idx in range( width*height ):
-            fh.buffer.write(struct.pack("d", depthmap[idx]))
-        fh.close()
+        #fh = open(filename+".backup", "w")
+        #fh.buffer.write(struct.pack("ii",width,height))
+        #for idx in range( width*height ):
+        #    fh.buffer.write(struct.pack("d", depthmap[idx]))
+        #fh.close()
 
     if add_blender_mesh:
         mesh_utils.add_mesh_from_points_tf(verts, "Scan", world_transformation)
