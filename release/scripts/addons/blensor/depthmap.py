@@ -97,14 +97,10 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
             
             world_ddist = ( ddist * zbuffer[idx] ) / focal_length
 
-            # TODO:
-            # - Max distance is not checked in depth map!
             object_distance =  math.sqrt(world_ddist ** 2 + zbuffer[idx] ** 2)
 
-            depthmap[idx] = object_distance
-
-            # Update evd storage for just the depth data
-            evd_storage.addEntry(distance=object_distance, distance_noise=object_distance, idx=idx)
+            if object_distance < max_distance:
+                depthmap[idx] = object_distance
 
             if add_blender_mesh or add_noisy_blender_mesh:
                 if object_distance < max_distance:
@@ -115,6 +111,10 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
                     vt = (world_transformation * reusable_vector).xyz
                     verts.append((x_multiplier * vt[0], y_multiplier*vt[1], z_multiplier*vt[2]))
 
+
+    # Update evd storage for just the depth data
+    for idx, val in enumerate(depthmap):
+        evd_storage.addEntry(distance=val, distance_noise=val, idx=idx)
 
     if filename:
         # save using evd file pipeline
