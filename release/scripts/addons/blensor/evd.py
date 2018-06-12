@@ -62,8 +62,14 @@ class evd_file:
     width  = 0
     height = 0
     max_depth=1.0
+    output_image = True
+    output_noisy = True
+    append_frame_counter = True
 
-    def __init__(self, filename, width=0, height=0, max_depth=1.0):
+    def __init__(self, filename,
+                 width=0, height=0, max_depth=1.0,
+                 output_image=True, output_noisy=True,
+                 append_frame_counter=True):
         self.filename = filename
         self.buffer = []
         self.extension = ""
@@ -71,6 +77,9 @@ class evd_file:
         self.output_labels = output_labels
         self.width = width
         self.height = height
+        self.output_image = output_image
+        self.output_noisy = output_noisy
+        self.append_frame_counter = append_frame_counter
         try:
           if self.filename[-4:] == ".pcd":
             self.mode = WRITER_MODE_PCL
@@ -263,26 +272,37 @@ class evd_file:
     def writePGMFile(self):
       global frame_counter    #Not nice to have it global but it needs to persist
       try:
-        print ("Writing PGM file %s%05d.pgm"%(self.filename,frame_counter))
-        pgm = open("%s%05d.pgm"%(self.filename,frame_counter),"w")
-        pgm_noisy = open("%s_noisy%05d.pgm"%(self.filename,frame_counter),"w")
-        pgm.write(PGM_HEADER%(self.width,self.height, PGM_VALUE_RANGE))
-        pgm_noisy.write(PGM_HEADER%(self.width,self.height, PGM_VALUE_RANGE))
-        for val in range(len(self.image)):
-          if not math.isnan(self.image[val]):
-            ival = int(PGM_VALUE_RANGE*self.image[val]/self.max_depth)
-          else:
-            ival = 0
-          pgm.write("%d\n"%(ival if ival < PGM_VALUE_RANGE else PGM_VALUE_RANGE))
-        for val in range(len(self.image_noisy)):
-          if not math.isnan(self.image_noisy[val]):
-            ival = int(PGM_VALUE_RANGE*self.image_noisy[val]/self.max_depth)
-          else:
-            ival = 0
-          pgm_noisy.write("%d\n"%(ival if ival < PGM_VALUE_RANGE else PGM_VALUE_RANGE))
-        
-        pgm.close()
-        pgm_noisy.close()
+        if self.append_frame_counter:
+            fname = "%s%05d.pgm"%(self.filename,frame_counter)
+            fname_noisy = "%s_noisy%05d.pgm"%(self.filename,frame_counter)
+        else:
+            fname = "%s.pgm"%(self.filename)
+            fname_noisy = "%s_noisy.pgm"%(self.filename)
+
+        if self.output_image:
+            print (f"Writing PGM file {fname}")
+            pgm = open(fname, "w")
+            pgm.write(PGM_HEADER%(self.width,self.height, PGM_VALUE_RANGE))
+            for val in range(len(self.image)):
+              if not math.isnan(self.image[val]):
+                ival = int(PGM_VALUE_RANGE*self.image[val]/self.max_depth)
+              else:
+                ival = 0
+              pgm.write("%d\n"%(ival if ival < PGM_VALUE_RANGE else PGM_VALUE_RANGE))
+            pgm.close()
+
+        if self.output_noisy:
+            print (f"Writing noisy PGM file {fname_noisy}")
+            pgm_noisy = open(fname_noisy, "w")
+            pgm_noisy.write(PGM_HEADER%(self.width,self.height, PGM_VALUE_RANGE))
+            for val in range(len(self.image_noisy)):
+              if not math.isnan(self.image_noisy[val]):
+                ival = int(PGM_VALUE_RANGE*self.image_noisy[val]/self.max_depth)
+              else:
+                ival = 0
+              pgm_noisy.write("%d\n"%(ival if ival < PGM_VALUE_RANGE else PGM_VALUE_RANGE))
+            pgm_noisy.close()
+
       except Exception as e:
         traceback.print_exc()
 

@@ -84,7 +84,9 @@ def scan_advanced(scanner_object, max_distance = 120, filename=None, add_blender
 
     verts = []
 
-    evd_storage = evd.evd_file(filename, width, height, max_distance)
+    evd_storage = evd.evd_file(filename, width, height, max_distance,
+                               output_image=False, output_noisy=True,
+                               append_frame_counter=False)
 
     reusable_vector = Vector([0.0,0.0,0.0,0.0])
     for idx in range( len(zbuffer) ):

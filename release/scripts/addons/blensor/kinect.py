@@ -272,7 +272,9 @@ def scan_advanced(scanner_object, evd_file=None,
 
     camera_returns = blensor.scan_interface.scan_rays(camera_rays, 2*max_distance, False,False,False)
     
-    evd_storage = evd.evd_file(evd_file, res_x, res_y, max_distance)
+    evd_storage = evd.evd_file(evd_file, res_x, res_y, max_distance,
+                               output_image=False, output_noisy=True,
+                               append_frame_counter=False)
 
     all_quantized_disparities = numpy.empty(res_x*res_y)
     all_quantized_disparities[:] = INVALID_DISPARITY
