@@ -275,9 +275,11 @@ class evd_file:
         if self.append_frame_counter:
             fname = "%s%05d.pgm"%(self.filename,frame_counter)
             fname_noisy = "%s_noisy%05d.pgm"%(self.filename,frame_counter)
+            fname_mask = "%s_mask%05d.pgm"%(self.filename,frame_counter)
         else:
             fname = "%s.pgm"%(self.filename)
             fname_noisy = "%s_noisy.pgm"%(self.filename)
+            fname_mask = "%s_mask.pgm"%(self.filename)
 
         if self.output_image:
             print (f"Writing PGM file {fname}")
@@ -295,13 +297,19 @@ class evd_file:
             print (f"Writing noisy PGM file {fname_noisy}")
             pgm_noisy = open(fname_noisy, "w")
             pgm_noisy.write(PGM_HEADER%(self.width,self.height, PGM_VALUE_RANGE))
+            pgm_mask = open(fname_mask, "w")
+            pgm_mask.write(PGM_HEADER%(self.width,self.height, 1))
             for val in range(len(self.image_noisy)):
               if not math.isnan(self.image_noisy[val]):
                 ival = int(PGM_VALUE_RANGE*self.image_noisy[val]/self.max_depth)
+                mval = 0
               else:
                 ival = 0
+                mval = 1
               pgm_noisy.write("%d\n"%(ival if ival < PGM_VALUE_RANGE else PGM_VALUE_RANGE))
+              pgm_mask.write("%d\n"%(mval))
             pgm_noisy.close()
+            pgm_mask.close()
 
       except Exception as e:
         traceback.print_exc()

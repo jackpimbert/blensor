@@ -367,8 +367,14 @@ def scan_advanced(scanner_object, evd_file=None,
                returns[idx][5][2],projector_idx]
             image_idx += 1
         else:
-          """Occlusion"""
-          pass
+            """Occlusion"""
+            #FIXME: Dirty hack to signal we've got an occluded/invalid value
+            kinect_image[projector_idx] = [0.0, 
+               0.0, 0.0, 0, numpy.nan, 0.0, 
+               0.0, 0.0, 0.0, 0.0, 0.0,
+               returns[idx][4], returns[idx][5][0], returns[idx][5][1],
+               returns[idx][5][2],projector_idx]
+            pass
 
     for e in kinect_image:
       evd_storage.addEntry(timestamp = e[0], yaw = e[1], pitch=e[2], 
